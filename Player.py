@@ -18,8 +18,7 @@ class Player:
         self.position_y += (self.velocity) / 5
 
         if self.position_y > pygame.display.get_surface().get_size()[1] - self.width/2:
-            self.position_y = pygame.display.get_surface().get_size()[1] - self.width/2
+            return False
 
         elif self.position_y < self.width/2:
-            self.position_y = self.width/2
-            self.velocity = 0
+            return False
