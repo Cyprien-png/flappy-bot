@@ -3,8 +3,14 @@ import random
 
 class Obstacle:
     
-    def __init__(self):
-        self.position_x = pygame.display.get_surface().get_size()[0]
+    position_x = 0
+    width = 50
+    hole_size = 200
+    hole_height = 0
+    
+    
+    def __init__(self, position_x = 1200):
+        self.position_x = position_x
         self.width = 50
         self.hole_size = 200
         self.hole_height = random.randint(0, pygame.display.get_surface().get_size()[1] - self.hole_size)
