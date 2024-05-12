@@ -23,7 +23,8 @@ class Game:
         
     def lose(self):
         self.lose_count += 1
-        self.player = Player()
+        self.player.position_y = pygame.display.get_surface().get_size()[1] / 2
+        self.player.velocity = 0
         self.distance = 0
         self.obstacles = []
         
