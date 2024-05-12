@@ -18,11 +18,24 @@ class Game:
     def __init__(self):
         pygame.init()
         
+    def score(self):
+        return self.distance
+        
     def lose(self):
         self.lose_count += 1
         self.player = Player()
         self.distance = 0
         self.obstacles = []
+        
+    def check_collision(self):
+        player = self.player
+        obstacles = self.obstacles
+        
+        for obstacle in obstacles:
+            if player.position_x + player.width/2 > obstacle.position_x and player.position_x - player.width/2 < obstacle.position_x + obstacle.width:
+                if player.position_y - player.width/2 < obstacle.hole_height or player.position_y + player.width/2 > obstacle.hole_height + obstacle.hole_size:
+                    self.lose()
+                    break
         
     def draw(self):
         obstacles = self.obstacles
@@ -38,7 +51,7 @@ class Game:
         
         # draw game text score
         font = pygame.font.Font(None, 36)
-        text = font.render(str(self.distance), 1, (255, 255, 255))
+        text = font.render(str(self.score()), 1, (255, 255, 255))
         textpos = text.get_rect(centerx=self.screen.get_width()/2)
         self.screen.blit(text, textpos)
         
@@ -56,6 +69,9 @@ class Game:
         
         if self.player.update() == False:
             self.lose()
+            
+        # check collision
+        self.check_collision()
                    
     
     def run(self):
