@@ -1,30 +1,40 @@
 import pygame
 from Player import Player
 from Obstacle import Obstacle
+import neat
+import os
+import pickle
+
 
 class Game:
     
-    screen = pygame.display.set_mode((1280, 500))
-    clock = pygame.time.Clock()
-    running = True
-    player = Player()
-    obstacles = []
-    obstacles_gap = 250
-    game_speed = 2
-    
-    distance = 0
-    lose_count = 0
-    
     def __init__(self):
         pygame.init()
+        self.screen = pygame.display.set_mode((1280, 500))
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.player = Player()
+        self.obstacles = [Obstacle(600)]
+        self.obstacles_gap = 600
+        self.game_speed = 2
+        self.distance = 0
+        self.lose_count = 0
         
     def score(self):
         return self.distance
         
     def lose(self):
         self.lose_count += 1
-        self.player = Player()
+        # self.reset()
+        self.screen.fill((255, 0, 0))
+        pygame.display.flip()
+        
+    def reset(self):
+        self.lose_count = 0
+        self.player.position_y = pygame.display.get_surface().get_size()[1] / 2
+        self.player.velocity = 0
         self.distance = 0
+        # empty the obstacles list
         self.obstacles = []
         
     def check_collision(self):
@@ -74,24 +84,98 @@ class Game:
         self.check_collision()
                    
     
-    def run(self):
+    def train_ai(self, genome, config, train=False):
+        net = neat.nn.FeedForwardNetwork.create(genome, config)
         while self.running:
-            self.clock.tick(120)
+            
+            if train == False:
+                self.clock.tick(120)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
-
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_SPACE]:
+                     quit()
+                   
+                   
+            next_obstacles = []
+     
+            for obstacle in self.obstacles:
+                if obstacle.position_x > self.player.position_x - obstacle.width: 
+                    next_obstacles.append(obstacle)
+            
+            
+            if  len(next_obstacles) > 0:
+                next_obstacle_height = next_obstacles[0].hole_height
+                next_obstacle_distance = next_obstacles[0].position_x - self.player.position_x
+            else :
+                next_obstacle_height = pygame.display.get_surface().get_size()[1] / 2
+                next_obstacle_distance = pygame.display.get_surface().get_size()[0]
+                
+            # print(self.player.position_y, next_obstacle_height, next_obstacle_distance)
+            output = net.activate((self.player.position_y, next_obstacle_height, next_obstacle_distance))
+            decision = output.index(max(output))
+            
+            if decision == 0:
+                pass
+            else :
                 self.player.jump()
-
+ 
             self.update()
-            self.draw()
+            if train == False:
+                self.draw()
             
             if self.distance%self.obstacles_gap == 0:
                 self.obstacles.append(Obstacle())
                 
             self.distance += self.game_speed
+            
+            if self.lose_count > 0 or self.score() > 10000:
+                self.calculate_fitness(genome, self.score())
+                break
 
-game = Game()
-game.run()
+    def calculate_fitness(self, genome, score):
+        genome.fitness = score 
+
+
+def eval_genomes(genomes, config):    
+
+
+    for genome_id, genome in genomes:
+        genome.fitness = 0
+        game = Game()
+        
+        # Create a new game for each genome
+        
+        force_quit = game.train_ai(genome, config, True)
+        if force_quit:
+            quit()
+
+
+def test_ai(config):
+    with open("best.pickle", "rb") as f:
+        genome = pickle.load(f)
+    game = Game()
+    game.train_ai(genome, config)
+    quit()
+
+def run_neat(config):
+        
+    p = neat.Population(config)
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    p.add_reporter(neat.Checkpointer(1, None, "checkpoints/"))
+
+
+    winner = p.run(eval_genomes, 150)
+    with open("best.pickle", "wb") as f:
+        pickle.dump(winner, f)
+
+    
+
+if __name__ == "__main__":
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, "config.txt")
+
+config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
+# run_neat(config)
+test_ai(config)
