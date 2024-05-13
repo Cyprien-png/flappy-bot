@@ -181,6 +181,9 @@ def test_ai(config):
     quit()
 
 def run_neat(config):
+
+    if not os.path.exists("checkpoints"):
+        os.makedirs("checkpoints")
         
     p = neat.Population(config)
     p.add_reporter(neat.StdOutReporter(True))
