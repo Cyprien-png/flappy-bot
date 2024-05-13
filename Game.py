@@ -9,8 +9,10 @@ class Game:
     running = True
     player = Player()
     obstacles = []
-    obstacles_gap = 250
+    obstacles_gap = 400
     game_speed = 2
+    passed_obstacles = 0
+
     
     distance = 0
     lose_count = 0
@@ -19,7 +21,7 @@ class Game:
         pygame.init()
         
     def score(self):
-        return self.distance
+        return self.passed_obstacles
         
     def lose(self):
         self.lose_count += 1
@@ -27,6 +29,8 @@ class Game:
         self.player.velocity = 0
         self.distance = 0
         self.obstacles = []
+        self.passed_obstacles = 0
+
         
     def check_collision(self):
         player = self.player
@@ -42,7 +46,7 @@ class Game:
         obstacles = self.obstacles
         
         # clear screen
-        self.screen.fill((0, 0, 0))
+        self.screen.fill((149, 203, 231 ))
 
         # draw game objects
         for obstacle in obstacles:
@@ -67,6 +71,8 @@ class Game:
         for obstacle in obstacles:
             if obstacle.update(self.game_speed) == False:
                 self.obstacles.remove(obstacle)
+            if obstacle.position_x == self.player.position_x:
+                self.passed_obstacles += 1
         
         if self.player.update() == False:
             self.lose()
