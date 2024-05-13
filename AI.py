@@ -93,8 +93,8 @@ class Game:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         while self.running:
             
-            # if train == False:
-                # self.clock.tick(120)
+            if train == False:
+                self.clock.tick(120)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
