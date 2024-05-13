@@ -1,4 +1,5 @@
 import pygame
+bird_image = pygame.image.load("assets/bird.png")
 
 class Player:
 
@@ -11,7 +12,10 @@ class Player:
         self.position_y = pygame.display.get_surface().get_size()[1] / 2
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 0, 0), (self.position_x, self.position_y), self.width/2)
+        # pygame.draw.circle(screen, (255, 0, 0), (self.position_x, self.position_y), self.width/2)
+        # resize the image
+        bird = pygame.transform.scale(bird_image, (self.width, self.width))
+        screen.blit(bird, (self.position_x - self.width/2, self.position_y - self.width/2))
 
     def jump(self):
         self.velocity = -25
